@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -37,7 +37,7 @@
     <h1>확인자 QR 스캐너</h1>
     <p class="sub">로그인 후 학생 QR을 스캔하고 지급 처리하세요.</p>
 
-    <div class="card">
+    <div class="card" id="loginCard">
       <input id="gasUrl" class="input" placeholder="GAS 웹앱 URL 입력" />
       <input id="loginId" class="input" placeholder="확인자 아이디" />
       <input id="loginPw" class="input" placeholder="확인자 비밀번호" type="password" />
@@ -192,12 +192,12 @@
     saveLocal();
     setStatus('로그인 중…');
     jsonp({action:'loginVerifier',loginId:id,loginPw:pw}).then(function(res){
-      if(res&&res.status==='success'&&res.sessionToken){SESSION_TOKEN=res.sessionToken;setStatus('로그인 성공. 스캔하세요.','ok');startCamera();}
+      if(res&&res.status==='success'&&res.sessionToken){SESSION_TOKEN=res.sessionToken;document.getElementById('loginCard').style.display='none';setStatus('로그인 성공. 스캔하세요.','ok');startCamera();}
       else setStatus((res&&res.message)||'로그인 실패','err');
     }).catch(function(e){setStatus(e.message,'err');});
   };
 
-  document.getElementById('logoutBtn').onclick=function(){ SESSION_TOKEN=''; CURRENT_TOKEN=''; setStatus('로그아웃 완료','ok'); };
+  document.getElementById('logoutBtn').onclick=function(){ SESSION_TOKEN=''; CURRENT_TOKEN=''; document.getElementById('loginCard').style.display='block'; setStatus('로그아웃 완료','ok'); };
 
   document.getElementById('markBtn').onclick=function(){
     if(!SESSION_TOKEN||!CURRENT_TOKEN){setStatus('세션 또는 토큰이 없습니다.','err');return;}
