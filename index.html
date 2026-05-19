@@ -57,6 +57,7 @@
 
     <div id="result" class="card">
       <div class="kv">학번: <strong id="rStudent"></strong></div>
+      <div class="kv">성명: <strong id="rName"></strong></div>
       <div class="kv">등수: <strong id="rPrize"></strong></div>
       <div class="kv">상태: <span id="rDelivered"></span></div>
       <button id="markBtn" class="btn">지급처리</button>
@@ -100,12 +101,24 @@
     });
   }
 
-  function parseToken(raw){
+  function parseQrPayload(raw){
     var t=String(raw||'').trim();
+    var out={token:'',studentId:'',studentName:'',prize:''};
+    if(!t) return out;
     var m=t.match(/[?&]v=([^&\s#]+)/i);
-    if(m) return decodeURIComponent(m[1]);
-    if(/^[0-9a-f-]{36}$/i.test(t)) return t;
-    return '';
+    if(m) out.token=safeDecode(m[1]);
+    var sid=t.match(/[?&]sid=([^&\s#]+)/i);
+    var sn=t.match(/[?&]sn=([^&\s#]+)/i);
+    var pr=t.match(/[?&]pr=([^&\s#]+)/i);
+    if(sid) out.studentId=safeDecode(sid[1]);
+    if(sn) out.studentName=safeDecode(sn[1]);
+    if(pr) out.prize=safeDecode(pr[1]);
+    if(!out.token && /^[0-9a-f-]{36}$/i.test(t)) out.token=t;
+    return out;
+  }
+
+  function safeDecode(v){
+    try{return decodeURIComponent(v);}catch(e){return v;}
   }
 
   function startCamera(){
@@ -153,27 +166,25 @@
   }
 
   function handleQr(raw){
-    var token=parseToken(raw);
+    var payload=parseQrPayload(raw);
+    var token=payload.token;
     if(!token || token===lastScan) return;
     lastScan=token; CURRENT_TOKEN=token; scanned=true;
     cancelAnimationFrame(rafId);
     document.getElementById('scanLine').style.display='none';
-    lookupToken(token);
-  }
-
-  function lookupToken(token){
-    if(!SESSION_TOKEN){setStatus('먼저 로그인해 주세요.','err');return;}
-    setStatus('조회 중…');
-    jsonp({action:'lookupPrize',verifyToken:token}).then(function(res){
-      if(!res||res.status!=='success'){setStatus((res&&res.message)||'조회 실패','err');return;}
-      showResult(res);
-      setStatus('조회 완료','ok');
-    }).catch(function(e){setStatus(e.message,'err');});
+    showResult({
+      studentId: payload.studentId || '(QR 포함값 없음)',
+      studentName: payload.studentName || '',
+      prize: payload.prize || '(QR 포함값 없음)',
+      delivered: false
+    });
+    setStatus('스캔 완료. 지급처리를 눌러 기록하세요.','ok');
   }
 
   function showResult(res){
     document.getElementById('result').style.display='block';
     document.getElementById('rStudent').textContent=res.studentId||'';
+    document.getElementById('rName').textContent=res.studentName||'';
     document.getElementById('rPrize').textContent=res.prize||'';
     var d=document.getElementById('rDelivered');
     if(res.delivered){
@@ -203,8 +214,24 @@
     if(!SESSION_TOKEN||!CURRENT_TOKEN){setStatus('세션 또는 토큰이 없습니다.','err');return;}
     setStatus('지급 처리 중…');
     jsonp({action:'markDeliveredFast',sessionToken:SESSION_TOKEN,verifyToken:CURRENT_TOKEN}).then(function(res){
-      if(res&&res.status==='success'){setStatus('지급 완료 기록되었습니다.','ok'); lookupToken(CURRENT_TOKEN);}
-      else if(res&&res.status==='duplicate'){setStatus(res.message,'err'); lookupToken(CURRENT_TOKEN);}
+      if(res&&res.status==='success'){
+        setStatus('지급 완료 기록되었습니다.','ok');
+        showResult({
+          studentId: res.studentId || document.getElementById('rStudent').textContent,
+          studentName: res.studentName || document.getElementById('rName').textContent,
+          prize: res.prize || document.getElementById('rPrize').textContent,
+          delivered: true
+        });
+      }
+      else if(res&&res.status==='duplicate'){
+        setStatus(res.message,'err');
+        showResult({
+          studentId: res.studentId || document.getElementById('rStudent').textContent,
+          studentName: res.studentName || document.getElementById('rName').textContent,
+          prize: res.prize || document.getElementById('rPrize').textContent,
+          delivered: true
+        });
+      }
       else setStatus((res&&res.message)||'처리 실패','err');
     }).catch(function(e){setStatus(e.message,'err');});
   };
