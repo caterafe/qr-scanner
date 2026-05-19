@@ -38,7 +38,6 @@
     <p class="sub">로그인 후 학생 QR을 스캔하고 지급 처리하세요.</p>
 
     <div class="card" id="loginCard">
-      <input id="gasUrl" class="input" placeholder="GAS 웹앱 URL 입력" />
       <input id="loginId" class="input" placeholder="확인자 아이디" />
       <input id="loginPw" class="input" placeholder="확인자 비밀번호" type="password" />
       <button id="loginBtn" class="btn">로그인</button>
@@ -66,7 +65,8 @@
 
 <script>
   var jsQrReady=false,pendingStart=false;
-  var GAS_URL='',SESSION_TOKEN='',CURRENT_TOKEN='';
+  var GAS_URL='https://script.google.com/macros/s/AKfycbwBnusLQOgg5KT4XdDSW3_7NKkHhNcl2TRZe0BYoPToEuk4Hs-VqH1A9XUAitJm9yKsOQ/exec';
+  var SESSION_TOKEN='',CURRENT_TOKEN='';
   var video=document.getElementById('video');
   var canvas=document.getElementById('canvas');
   var ctx=canvas.getContext('2d');
@@ -81,12 +81,12 @@
   })();
 
   function setStatus(msg,cls){var e=document.getElementById('status');e.textContent=msg;e.className=cls||'';}
-  function saveLocal(){localStorage.setItem('verifier_gas_url',GAS_URL||'');localStorage.setItem('verifier_login_id',document.getElementById('loginId').value||'');}
-  function loadLocal(){document.getElementById('gasUrl').value=localStorage.getItem('verifier_gas_url')||'';document.getElementById('loginId').value=localStorage.getItem('verifier_login_id')||'';}
+  function saveLocal(){localStorage.setItem('verifier_login_id',document.getElementById('loginId').value||'');}
+  function loadLocal(){document.getElementById('loginId').value=localStorage.getItem('verifier_login_id')||'';}
 
   function jsonp(params){
     return new Promise(function(resolve,reject){
-      if(!GAS_URL){reject(new Error('GAS URL이 비어 있습니다.'));return;}
+      if(!GAS_URL || GAS_URL.indexOf('REPLACE_WITH_YOUR_DEPLOYMENT_ID') >= 0){reject(new Error('코드의 GAS_URL을 실제 웹앱 URL로 바꿔 주세요.'));return;}
       var cb='cb_'+Date.now()+'_'+Math.floor(Math.random()*10000);
       window[cb]=function(data){cleanup();resolve(data);};
       var q=[]; Object.keys(params).forEach(function(k){q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]));});
@@ -185,10 +185,9 @@
   }
 
   document.getElementById('loginBtn').onclick=function(){
-    GAS_URL=document.getElementById('gasUrl').value.trim();
     var id=document.getElementById('loginId').value.trim();
     var pw=document.getElementById('loginPw').value;
-    if(!GAS_URL||!id||!pw){setStatus('URL/아이디/비밀번호를 입력해 주세요.','err');return;}
+    if(!id||!pw){setStatus('아이디/비밀번호를 입력해 주세요.','err');return;}
     saveLocal();
     setStatus('로그인 중…');
     jsonp({action:'loginVerifier',loginId:id,loginPw:pw}).then(function(res){
