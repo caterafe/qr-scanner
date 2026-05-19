@@ -178,7 +178,26 @@
       prize: payload.prize || '(QR 포함값 없음)',
       delivered: false
     });
-    setStatus('스캔 완료. 지급처리를 눌러 기록하세요.','ok');
+    setStatus('스캔 완료. 상태 확인 중…','ok');
+    refreshStatusByToken(token);
+  }
+
+  function refreshStatusByToken(token){
+    jsonp({action:'scanStatus',verifyToken:token}).then(function(res){
+      if(!res || res.status!=='success'){
+        setStatus((res&&res.message)||'상태 확인 실패','err');
+        return;
+      }
+      showResult({
+        studentId: res.studentId || document.getElementById('rStudent').textContent,
+        studentName: res.studentName || document.getElementById('rName').textContent,
+        prize: res.prize || document.getElementById('rPrize').textContent,
+        delivered: !!res.delivered
+      });
+      setStatus(res.delivered ? '이미 지급완료된 건입니다.' : '미지급 건입니다. 지급처리를 눌러 주세요.', res.delivered ? 'err' : 'ok');
+    }).catch(function(e){
+      setStatus(e.message || '상태 확인 실패','err');
+    });
   }
 
   function showResult(res){
