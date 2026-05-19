@@ -213,7 +213,7 @@
   document.getElementById('markBtn').onclick=function(){
     if(!SESSION_TOKEN||!CURRENT_TOKEN){setStatus('세션 또는 토큰이 없습니다.','err');return;}
     setStatus('지급 처리 중…');
-    jsonp({action:'markDeliveredFast',sessionToken:SESSION_TOKEN,verifyToken:CURRENT_TOKEN}).then(function(res){
+    jsonp({action:'scanAndMark',sessionToken:SESSION_TOKEN,verifyToken:CURRENT_TOKEN}).then(function(res){
       if(res&&res.status==='success'){
         setStatus('지급 완료 기록되었습니다.','ok');
         showResult({
@@ -250,4 +250,5 @@
 </script>
 </body>
 </html>
+
 
