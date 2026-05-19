@@ -67,7 +67,7 @@
 
 <script>
   var jsQrReady=false,pendingStart=false;
-  var GAS_URL='https://script.google.com/macros/s/AKfycbwBnusLQOgg5KT4XdDSW3_7NKkHhNcl2TRZe0BYoPToEuk4Hs-VqH1A9XUAitJm9yKsOQ/exec';
+  var GAS_URL='https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec';
   var SESSION_TOKEN='',CURRENT_TOKEN='';
   var video=document.getElementById('video');
   var canvas=document.getElementById('canvas');
@@ -176,7 +176,7 @@
       studentId: payload.studentId || '(QR 포함값 없음)',
       studentName: payload.studentName || '',
       prize: payload.prize || '(QR 포함값 없음)',
-      delivered: false
+      delivered: null
     });
     setStatus('스캔 완료. 상태 확인 중…','ok');
     refreshStatusByToken(token);
@@ -206,12 +206,15 @@
     document.getElementById('rName').textContent=res.studentName||'';
     document.getElementById('rPrize').textContent=res.prize||'';
     var d=document.getElementById('rDelivered');
-    if(res.delivered){
+    if(res.delivered === true){
       d.innerHTML='<span class="pill done">지급완료</span>';
       document.getElementById('markBtn').style.display='none';
-    }else{
+    }else if(res.delivered === false){
       d.innerHTML='<span class="pill pending">미지급</span>';
       document.getElementById('markBtn').style.display='block';
+    }else{
+      d.innerHTML='<span class="pill pending">상태 확인 중</span>';
+      document.getElementById('markBtn').style.display='none';
     }
   }
 
