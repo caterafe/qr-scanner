@@ -26,9 +26,10 @@
     #status{margin-top:12px;font-size:.9rem;color:#94a3b8;min-height:2.4em;white-space:pre-line}
     #status.ok{color:#34d399} #status.err{color:#f87171}
     #result{margin-top:12px;display:none}
-    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.8rem;font-weight:700}
+    .pill{display:inline-block;padding:6px 12px;border-radius:999px;font-size:1rem;font-weight:700}
     .pill.pending{background:#fef3c7;color:#92400e}.pill.done{background:#d1fae5;color:#065f46}
-    .kv{margin:6px 0;color:#e5e7eb}
+    .kv{margin:8px 0;color:#e5e7eb;font-size:1.08rem;line-height:1.55}
+    .kv strong{font-size:1.28rem;color:#ffffff}
     canvas{display:none}
   </style>
 </head>
@@ -65,7 +66,7 @@
 
 <script>
   var jsQrReady=false,pendingStart=false;
-  var GAS_URL='https://script.google.com/macros/s/AKfycbwBnusLQOgg5KT4XdDSW3_7NKkHhNcl2TRZe0BYoPToEuk4Hs-VqH1A9XUAitJm9yKsOQ/exec';
+  var GAS_URL='https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec';
   var SESSION_TOKEN='',CURRENT_TOKEN='';
   var video=document.getElementById('video');
   var canvas=document.getElementById('canvas');
